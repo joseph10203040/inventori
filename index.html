@@ -219,14 +219,15 @@
         .inline-rename {
             background: var(--bg-color);
             border: 1px solid var(--primary);
-            border-radius: 4px;
+            border-radius: 6px;
             color: var(--text-main);
             font-size: 14px;
             font-weight: 600;
-            padding: 2px 6px;
+            padding: 8px;
             width: 100%;
             outline: none;
             font-family: inherit;
+            margin-bottom: 0; /* Override default input margin */
         }
 
         .bins-col {
@@ -311,11 +312,13 @@
             color: var(--danger);
         }
 
+        /* HARDCODED BUTTON FIXES */
         .add-bag-form {
             display: flex;
             gap: 8px;
             margin-bottom: 10px;
             flex-shrink: 0;
+            height: 44px; /* Fixed height for mobile touch targets */
         }
 
         .add-bag-form input {
@@ -323,6 +326,7 @@
             flex-grow: 1;
             padding: 10px;
             font-size: 14px;
+            height: 100%;
         }
 
         .add-bag-btn {
@@ -330,16 +334,16 @@
             color: var(--bg-color);
             border: none;
             border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            font-size: 15px;
+            font-weight: 800;
             cursor: pointer;
             transition: 0.2s;
-            padding: 0 15px;
-            width: auto;
+            width: 70px; /* FORCED WIDTH */
+            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            flex-shrink: 0; /* Prevents squishing */
         }
 
         .add-bag-btn:active {
@@ -742,8 +746,6 @@
             const avgRssi = sum / tagHistory[cleanID].length;
 
             // --- 1. PAIRING TAB LOGIC ---
-            // Fix: Only process pairing if the radar animation is actively displayed.
-            // This locks the text box once the tag is found, preventing the ghost typing bug.
             if (document.getElementById('pairing-active').style.display === 'flex') {
                 const pairThreshold = parseInt(document.getElementById('pair-range-slider').value);
 
@@ -978,17 +980,19 @@
             const nameSpan = document.getElementById('name-' + id);
             const currentName = masterItems[id].name;
             
-            // Fix: Create a proper wrapper with a physical save button for mobile
+            // Hardcoded layout for the inline save button so it cannot disappear
             const wrapper = document.createElement('div');
             wrapper.style.display = 'flex';
             wrapper.style.width = '100%';
             wrapper.style.gap = '6px';
+            wrapper.style.height = '36px';
 
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'inline-rename';
             input.value = currentName;
-            input.enterKeyHint = 'done'; // Suggests "Done" instead of "Return" on iPhone
+            input.enterKeyHint = 'done';
+            input.style.height = '100%';
 
             const saveBtn = document.createElement('button');
             saveBtn.innerText = 'Save';
@@ -996,9 +1000,10 @@
             saveBtn.style.color = 'white';
             saveBtn.style.border = 'none';
             saveBtn.style.borderRadius = '6px';
-            saveBtn.style.padding = '0 12px';
+            saveBtn.style.minWidth = '60px'; /* Hardcoded width */
             saveBtn.style.fontWeight = 'bold';
             saveBtn.style.cursor = 'pointer';
+            saveBtn.style.height = '100%';
 
             wrapper.appendChild(input);
             wrapper.appendChild(saveBtn);
@@ -1028,8 +1033,11 @@
                 if (document.getElementById('view-scan').classList.contains('active')) renderScanList();
             }
             
-            saveBtn.addEventListener('click', commitRename);
-            input.addEventListener('blur', () => { setTimeout(commitRename, 150); });
+            saveBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault(); // Prevents input blur from firing before click registers
+                commitRename();
+            });
+            input.addEventListener('blur', commitRename);
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
                 if (e.key === 'Escape') { renderOrganizer(); }
