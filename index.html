@@ -227,7 +227,7 @@
             width: 100%;
             outline: none;
             font-family: inherit;
-            margin-bottom: 0; /* Override default input margin */
+            margin-bottom: 0; 
         }
 
         .bins-col {
@@ -312,42 +312,48 @@
             color: var(--danger);
         }
 
-        /* HARDCODED BUTTON FIXES */
+        /* NEW INSIDE-TEXTBOX BUTTON STYLES */
         .add-bag-form {
-            display: flex;
-            gap: 8px;
+            position: relative;
+            width: 100%;
             margin-bottom: 10px;
             flex-shrink: 0;
-            height: 44px; /* Fixed height for mobile touch targets */
         }
 
         .add-bag-form input {
+            width: 100%;
             margin-bottom: 0;
-            flex-grow: 1;
-            padding: 10px;
+            padding: 12px;
+            padding-right: 45px; /* Leaves space for the button */
             font-size: 14px;
-            height: 100%;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--surface);
+            color: var(--text-main);
+            outline: none;
         }
 
         .add-bag-btn {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            width: 32px;
             background-color: var(--primary);
             color: var(--bg-color);
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 800;
+            border-radius: 6px;
+            font-size: 20px;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
-            width: 70px; /* FORCED WIDTH */
-            height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0; /* Prevents squishing */
+            transition: 0.2s;
         }
 
         .add-bag-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.9);
             opacity: 0.8;
         }
 
@@ -629,7 +635,7 @@
                     <div class="add-bag-form">
                         <input type="text" id="new-bag-input" placeholder="New Bag Name..." enterkeyhint="done"
                             onkeydown="handleBagEnter(event)">
-                        <button class="add-bag-btn" onclick="createNewBag()">Add</button>
+                        <button class="add-bag-btn" onclick="createNewBag()">+</button>
                     </div>
                     <div id="dynamic-bins-container" style="display:flex; flex-direction:column; gap: 15px;"></div>
                     <div id="bins-empty" class="empty-state" style="display:none;">
@@ -980,7 +986,6 @@
             const nameSpan = document.getElementById('name-' + id);
             const currentName = masterItems[id].name;
             
-            // Hardcoded layout for the inline save button so it cannot disappear
             const wrapper = document.createElement('div');
             wrapper.style.display = 'flex';
             wrapper.style.width = '100%';
@@ -1000,7 +1005,7 @@
             saveBtn.style.color = 'white';
             saveBtn.style.border = 'none';
             saveBtn.style.borderRadius = '6px';
-            saveBtn.style.minWidth = '60px'; /* Hardcoded width */
+            saveBtn.style.minWidth = '60px'; 
             saveBtn.style.fontWeight = 'bold';
             saveBtn.style.cursor = 'pointer';
             saveBtn.style.height = '100%';
@@ -1034,7 +1039,7 @@
             }
             
             saveBtn.addEventListener('mousedown', (e) => {
-                e.preventDefault(); // Prevents input blur from firing before click registers
+                e.preventDefault(); 
                 commitRename();
             });
             input.addEventListener('blur', commitRename);
