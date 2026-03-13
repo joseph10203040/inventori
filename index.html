@@ -330,11 +330,12 @@
             color: var(--bg-color);
             border: none;
             border-radius: 8px;
-            font-size: 24px;
+            font-size: 16px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
-            width: 45px;
+            padding: 0 15px;
+            width: auto;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -622,9 +623,9 @@
 
                 <div class="bins-col">
                     <div class="add-bag-form">
-                        <input type="text" id="new-bag-input" placeholder="New Bag Name..."
+                        <input type="text" id="new-bag-input" placeholder="New Bag Name..." enterkeyhint="done"
                             onkeydown="handleBagEnter(event)">
-                        <button class="add-bag-btn" onclick="createNewBag()">+</button>
+                        <button class="add-bag-btn" onclick="createNewBag()">Add</button>
                     </div>
                     <div id="dynamic-bins-container" style="display:flex; flex-direction:column; gap: 15px;"></div>
                     <div id="bins-empty" class="empty-state" style="display:none;">
@@ -662,7 +663,7 @@
                         New Tag Found!</p>
                     <p style="font-family: monospace; color: var(--text-muted); margin-bottom: 15px;">ID: <span
                             id="new-tag-id"></span></p>
-                    <input type="text" id="new-tag-name" placeholder="Name (e.g., Caliper, Folder)"
+                    <input type="text" id="new-tag-name" placeholder="Name (e.g., Caliper, Folder)" enterkeyhint="done"
                         onkeydown="handlePairEnter(event)">
                     <button class="btn-primary" onclick="saveNewTag()">Save to Library</button>
                 </div>
@@ -741,10 +742,11 @@
             const avgRssi = sum / tagHistory[cleanID].length;
 
             // --- 1. PAIRING TAB LOGIC ---
-            if (document.getElementById('view-pair').classList.contains('active')) {
+            // Fix: Only process pairing if the radar animation is actively displayed.
+            // This locks the text box once the tag is found, preventing the ghost typing bug.
+            if (document.getElementById('pairing-active').style.display === 'flex') {
                 const pairThreshold = parseInt(document.getElementById('pair-range-slider').value);
 
-                // Check against the smoothed average instead of raw RSSI
                 if (avgRssi >= pairThreshold) {
                     document.getElementById('pairing-active').style.display = 'none';
                     document.getElementById('pairing-success').style.display = 'block';
@@ -771,7 +773,6 @@
             if (isScanningBag) {
                 const scanThreshold = parseInt(document.getElementById('scan-range-slider').value);
 
-                // Check against the smoothed average
                 if (avgRssi >= scanThreshold) {
                     itemsFoundThisScan.add(cleanID);
 
@@ -825,7 +826,7 @@
 
             isScanningBag = true;
             itemsFoundThisScan.clear();
-            tagHistory = {}; // Wipe history for a clean slate each scan
+            tagHistory = {}; 
 
             btn.innerText = "Scanning Bag...";
             btn.disabled = true;
@@ -834,7 +835,6 @@
             resultText.innerText = "Listening for tags...";
             resultText.style.color = "var(--primary)";
 
-            // Stop reading after 4 seconds and calculate results
             setTimeout(() => {
                 isScanningBag = false;
                 btn.innerText = "Scan Backpack";
@@ -977,16 +977,42 @@
         function startRename(id) {
             const nameSpan = document.getElementById('name-' + id);
             const currentName = masterItems[id].name;
+            
+            // Fix: Create a proper wrapper with a physical save button for mobile
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.width = '100%';
+            wrapper.style.gap = '6px';
+
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'inline-rename';
             input.value = currentName;
-            nameSpan.replaceWith(input);
+            input.enterKeyHint = 'done'; // Suggests "Done" instead of "Return" on iPhone
+
+            const saveBtn = document.createElement('button');
+            saveBtn.innerText = 'Save';
+            saveBtn.style.backgroundColor = 'var(--success)';
+            saveBtn.style.color = 'white';
+            saveBtn.style.border = 'none';
+            saveBtn.style.borderRadius = '6px';
+            saveBtn.style.padding = '0 12px';
+            saveBtn.style.fontWeight = 'bold';
+            saveBtn.style.cursor = 'pointer';
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(saveBtn);
+            
+            nameSpan.replaceWith(wrapper);
             input.focus();
             input.select();
 
+            let committed = false;
             function commitRename() {
+                if (committed) return;
+                committed = true;
                 const newName = input.value.trim();
+                
                 if (newName === '' || newName === currentName) {
                     renderOrganizer();
                     return;
@@ -1001,9 +1027,11 @@
                 renderOrganizer();
                 if (document.getElementById('view-scan').classList.contains('active')) renderScanList();
             }
-            input.addEventListener('blur', commitRename);
+            
+            saveBtn.addEventListener('click', commitRename);
+            input.addEventListener('blur', () => { setTimeout(commitRename, 150); });
             input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+                if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
                 if (e.key === 'Escape') { renderOrganizer(); }
             });
         }
