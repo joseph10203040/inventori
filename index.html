@@ -219,15 +219,14 @@
         .inline-rename {
             background: var(--bg-color);
             border: 1px solid var(--primary);
-            border-radius: 6px;
+            border-radius: 4px;
             color: var(--text-main);
             font-size: 14px;
             font-weight: 600;
-            padding: 8px;
+            padding: 2px 6px;
             width: 100%;
             outline: none;
             font-family: inherit;
-            margin-bottom: 0; 
         }
 
         .bins-col {
@@ -312,48 +311,38 @@
             color: var(--danger);
         }
 
-        /* NEW INSIDE-TEXTBOX BUTTON STYLES */
         .add-bag-form {
-            position: relative;
-            width: 100%;
+            display: flex;
+            gap: 8px;
             margin-bottom: 10px;
             flex-shrink: 0;
         }
 
         .add-bag-form input {
-            width: 100%;
             margin-bottom: 0;
-            padding: 12px;
-            padding-right: 45px; /* Leaves space for the button */
+            flex-grow: 1;
+            padding: 10px;
             font-size: 14px;
-            border-radius: 8px;
-            border: none;
-            background-color: var(--surface);
-            color: var(--text-main);
-            outline: none;
         }
 
         .add-bag-btn {
-            position: absolute;
-            right: 6px;
-            top: 6px;
-            bottom: 6px;
-            width: 32px;
             background-color: var(--primary);
             color: var(--bg-color);
             border: none;
-            border-radius: 6px;
-            font-size: 20px;
+            border-radius: 8px;
+            font-size: 24px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
+            width: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.2s;
+            flex-shrink: 0;
         }
 
         .add-bag-btn:active {
-            transform: scale(0.9);
+            transform: scale(0.95);
             opacity: 0.8;
         }
 
@@ -633,7 +622,7 @@
 
                 <div class="bins-col">
                     <div class="add-bag-form">
-                        <input type="text" id="new-bag-input" placeholder="New Bag Name..." enterkeyhint="done"
+                        <input type="text" id="new-bag-input" placeholder="New Bag Name..."
                             onkeydown="handleBagEnter(event)">
                         <button class="add-bag-btn" onclick="createNewBag()">+</button>
                     </div>
@@ -673,7 +662,7 @@
                         New Tag Found!</p>
                     <p style="font-family: monospace; color: var(--text-muted); margin-bottom: 15px;">ID: <span
                             id="new-tag-id"></span></p>
-                    <input type="text" id="new-tag-name" placeholder="Name (e.g., Caliper, Folder)" enterkeyhint="done"
+                    <input type="text" id="new-tag-name" placeholder="Name (e.g., Caliper, Folder)"
                         onkeydown="handlePairEnter(event)">
                     <button class="btn-primary" onclick="saveNewTag()">Save to Library</button>
                 </div>
@@ -716,6 +705,7 @@
 
                 await bleChar.startNotifications();
                 bleChar.addEventListener('characteristicvaluechanged', handleIncomingTag);
+                bleDevice.addEventListener('gattserverdisconnected', onBleDisconnected);
 
                 const btn = document.getElementById('ble-connect-btn');
                 btn.innerText = "🔵 Bag Connected";
@@ -726,6 +716,15 @@
                 console.error("Bluetooth Error:", error);
                 showToast("Bluetooth connection failed.", true);
             }
+        }
+
+        function onBleDisconnected() {
+            bleChar = null;
+            bleDevice = null;
+            const btn = document.getElementById('ble-connect-btn');
+            btn.innerText = "Connect to Bag";
+            btn.style.backgroundColor = "";
+            showToast("Bag disconnected.", true);
         }
 
         // INTELLIGENT PARSER WITH SMOOTHING
@@ -752,9 +751,10 @@
             const avgRssi = sum / tagHistory[cleanID].length;
 
             // --- 1. PAIRING TAB LOGIC ---
-            if (document.getElementById('pairing-active').style.display === 'flex') {
+            if (document.getElementById('view-pair').classList.contains('active')) {
                 const pairThreshold = parseInt(document.getElementById('pair-range-slider').value);
 
+                // Check against the smoothed average instead of raw RSSI
                 if (avgRssi >= pairThreshold) {
                     document.getElementById('pairing-active').style.display = 'none';
                     document.getElementById('pairing-success').style.display = 'block';
@@ -781,6 +781,7 @@
             if (isScanningBag) {
                 const scanThreshold = parseInt(document.getElementById('scan-range-slider').value);
 
+                // Check against the smoothed average
                 if (avgRssi >= scanThreshold) {
                     itemsFoundThisScan.add(cleanID);
 
@@ -834,7 +835,6 @@
 
             isScanningBag = true;
             itemsFoundThisScan.clear();
-            tagHistory = {}; 
 
             btn.innerText = "Scanning Bag...";
             btn.disabled = true;
@@ -843,6 +843,7 @@
             resultText.innerText = "Listening for tags...";
             resultText.style.color = "var(--primary)";
 
+            // Stop reading after 4 seconds and calculate results
             setTimeout(() => {
                 isScanningBag = false;
                 btn.innerText = "Scan Backpack";
@@ -961,6 +962,7 @@
             saveData();
             renderOrganizer();
             renderDropdown();
+            renderScanList();
         }
 
         function deleteProfile(profileId) {
@@ -985,44 +987,16 @@
         function startRename(id) {
             const nameSpan = document.getElementById('name-' + id);
             const currentName = masterItems[id].name;
-            
-            const wrapper = document.createElement('div');
-            wrapper.style.display = 'flex';
-            wrapper.style.width = '100%';
-            wrapper.style.gap = '6px';
-            wrapper.style.height = '36px';
-
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'inline-rename';
             input.value = currentName;
-            input.enterKeyHint = 'done';
-            input.style.height = '100%';
-
-            const saveBtn = document.createElement('button');
-            saveBtn.innerText = 'Save';
-            saveBtn.style.backgroundColor = 'var(--success)';
-            saveBtn.style.color = 'white';
-            saveBtn.style.border = 'none';
-            saveBtn.style.borderRadius = '6px';
-            saveBtn.style.minWidth = '60px'; 
-            saveBtn.style.fontWeight = 'bold';
-            saveBtn.style.cursor = 'pointer';
-            saveBtn.style.height = '100%';
-
-            wrapper.appendChild(input);
-            wrapper.appendChild(saveBtn);
-            
-            nameSpan.replaceWith(wrapper);
+            nameSpan.replaceWith(input);
             input.focus();
             input.select();
 
-            let committed = false;
             function commitRename() {
-                if (committed) return;
-                committed = true;
                 const newName = input.value.trim();
-                
                 if (newName === '' || newName === currentName) {
                     renderOrganizer();
                     return;
@@ -1037,14 +1011,9 @@
                 renderOrganizer();
                 if (document.getElementById('view-scan').classList.contains('active')) renderScanList();
             }
-            
-            saveBtn.addEventListener('mousedown', (e) => {
-                e.preventDefault(); 
-                commitRename();
-            });
             input.addEventListener('blur', commitRename);
             input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') { e.preventDefault(); commitRename(); }
+                if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
                 if (e.key === 'Escape') { renderOrganizer(); }
             });
         }
@@ -1064,15 +1033,18 @@
         }
 
         function switchView(viewName, navElement) {
+            const leavingPair = document.getElementById('view-pair').classList.contains('active');
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById('view-' + viewName).classList.add('active');
             navElement.classList.add('active');
             if (viewName === 'organize') renderOrganizer();
             if (viewName === 'scan') { renderDropdown(); renderScanList(); }
-            document.getElementById('pairing-idle').style.display = 'block';
-            document.getElementById('pairing-active').style.display = 'none';
-            document.getElementById('pairing-success').style.display = 'none';
+            if (leavingPair && viewName !== 'pair') {
+                document.getElementById('pairing-idle').style.display = 'block';
+                document.getElementById('pairing-active').style.display = 'none';
+                document.getElementById('pairing-success').style.display = 'none';
+            }
         }
 
         function renderDropdown() {
@@ -1231,8 +1203,13 @@
 
         function saveNewTag() {
             const id = document.getElementById('new-tag-id').innerText;
-            const nameInput = document.getElementById('new-tag-name').value.trim();
-            const finalName = nameInput || 'Unnamed Item';
+            const finalName = document.getElementById('new-tag-name').value.trim();
+
+            if (!finalName) {
+                showToast("Please enter a name for this item.", true);
+                document.getElementById('new-tag-name').focus();
+                return;
+            }
 
             if (isDuplicateName(finalName, id)) {
                 showToast(`Item "${finalName}" already exists.`, true);
