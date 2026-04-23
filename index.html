@@ -695,7 +695,7 @@
         async function connectBluetooth() {
             try {
                 bleDevice = await navigator.bluetooth.requestDevice({
-                    filters: [{ name: 'Inventori-Bag' }],
+                    filters: [{ name: 'Inventori' }],
                     optionalServices: [SERVICE_UUID]
                 });
 
