@@ -235,59 +235,14 @@
     align-items: center;
     justify-content: center;
   }
-  .big-logo {
-    width: 65%;
-    max-width: 340px;
-    height: auto;
-    object-fit: contain;
-    position: relative;
-    z-index: 2;
+  #device-canvas {
+    width: 100%;
+    height: 100%;
     display: block;
+    touch-action: none;
+    cursor: grab;
   }
-  .scan-field {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: none;
-  }
-  .scan-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid var(--cyan);
-    opacity: 0;
-    animation: scanPulse 4s cubic-bezier(0.1, 0.7, 0.3, 1) infinite;
-  }
-  .scan-ring:nth-child(2) { animation-delay: 1.3s; }
-  .scan-ring:nth-child(3) { animation-delay: 2.6s; }
-  @keyframes scanPulse {
-    0% { width: 30%; height: 30%; opacity: 0; }
-    20% { opacity: 0.5; }
-    100% { width: 110%; height: 110%; opacity: 0; }
-  }
-  .bracket {
-    position: absolute;
-    width: 24px; height: 24px;
-    border-color: var(--cyan);
-    border-style: solid;
-    border-width: 0;
-    opacity: 0.5;
-  }
-  .bracket.tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
-  .bracket.tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
-  .bracket.bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
-  .bracket.br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
-  .coord {
-    position: absolute;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px;
-    color: var(--cyan);
-    opacity: 0.7;
-    letter-spacing: 0.15em;
-  }
-  .coord.top { top: 10px; left: 50%; transform: translateX(-50%); }
-  .coord.bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+  #device-canvas:active { cursor: grabbing; }
 
   section { padding: 140px 0; border-top: 1px solid var(--rule); position: relative; }
   .section-label {
@@ -581,21 +536,7 @@
       </div>
 
       <div class="brand-visual fade-up d3">
-        <span class="bracket tl"></span>
-        <span class="bracket tr"></span>
-        <span class="bracket bl"></span>
-        <span class="bracket br"></span>
-
-        <span class="coord top">902-928 MHz</span>
-        <span class="coord bottom">ISO 18000-6C</span>
-
-        <div class="scan-field">
-          <div class="scan-ring"></div>
-          <div class="scan-ring"></div>
-          <div class="scan-ring"></div>
-        </div>
-
-        <img src="logo2.png" alt="" class="big-logo">
+        <canvas id="device-canvas" aria-label="3D model of the Inventori device"></canvas>
       </div>
     </div>
   </div>
@@ -744,6 +685,196 @@
       }
     });
   });
+</script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+  const canvas = document.getElementById('device-canvas');
+  if (canvas) {
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+    camera.position.set(0, 0.2, 4.4);
+    camera.lookAt(0, 0, 0);
+
+    // Lighting — moody, brand-aligned
+    scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+    key.position.set(3, 4, 3);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x4dd9e3, 1.1);
+    rim.position.set(-3, 1.5, -2);
+    scene.add(rim);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.25);
+    fill.position.set(0, -2, 2);
+    scene.add(fill);
+
+    // Pivot we rotate (so we can swap in a real GLB later without touching this)
+    const pivot = new THREE.Group();
+    scene.add(pivot);
+
+    // Placeholder disk: circular retainer-case shape
+    function buildPlaceholderDisk() {
+      const group = new THREE.Group();
+      const radius = 1.15;
+      const height = 0.32;
+
+      const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius, radius, height, 96, 1, false),
+        new THREE.MeshStandardMaterial({ color: 0x141418, metalness: 0.55, roughness: 0.42 })
+      );
+      group.add(body);
+
+      // Subtle bevel rings (top + bottom edges)
+      const bevelGeo = new THREE.TorusGeometry(radius - 0.005, 0.018, 16, 96);
+      const bevelMat = new THREE.MeshStandardMaterial({ color: 0x2a2a30, metalness: 0.7, roughness: 0.3 });
+      const topBevel = new THREE.Mesh(bevelGeo, bevelMat);
+      topBevel.rotation.x = Math.PI / 2;
+      topBevel.position.y = height / 2;
+      group.add(topBevel);
+      const botBevel = topBevel.clone();
+      botBevel.position.y = -height / 2;
+      group.add(botBevel);
+
+      // Top inset face with cyan accent ring
+      const inset = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius * 0.86, radius * 0.86, 0.02, 96),
+        new THREE.MeshStandardMaterial({ color: 0x0a0a0c, metalness: 0.4, roughness: 0.6 })
+      );
+      inset.position.y = height / 2 + 0.005;
+      group.add(inset);
+
+      const accent = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 0.7, 0.012, 16, 96),
+        new THREE.MeshStandardMaterial({
+          color: 0x4dd9e3,
+          emissive: 0x4dd9e3,
+          emissiveIntensity: 1.4,
+          metalness: 0.2,
+          roughness: 0.4
+        })
+      );
+      accent.rotation.x = Math.PI / 2;
+      accent.position.y = height / 2 + 0.018;
+      group.add(accent);
+
+      // Center dot
+      const dot = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.07, 0.07, 0.025, 32),
+        new THREE.MeshStandardMaterial({
+          color: 0x4dd9e3,
+          emissive: 0x4dd9e3,
+          emissiveIntensity: 1.6
+        })
+      );
+      dot.position.y = height / 2 + 0.02;
+      group.add(dot);
+
+      // Stand the disk upright so Y-spin reads as a coin spinning on edge
+      group.rotation.x = Math.PI / 2;
+      return group;
+    }
+
+    let model = buildPlaceholderDisk();
+    pivot.add(model);
+
+    // To swap in a real CAD model later, drop the .glb in the repo and uncomment:
+    // new GLTFLoader().load('inventori-device.glb', (gltf) => {
+    //   pivot.remove(model);
+    //   model = gltf.scene;
+    //   // Center + scale to fit roughly in a 2-unit sphere
+    //   const box = new THREE.Box3().setFromObject(model);
+    //   const size = box.getSize(new THREE.Vector3());
+    //   const center = box.getCenter(new THREE.Vector3());
+    //   model.position.sub(center);
+    //   const scale = 2.2 / Math.max(size.x, size.y, size.z);
+    //   model.scale.setScalar(scale);
+    //   pivot.add(model);
+    // });
+
+    // Rotation physics: idle auto-spin, drag to fling, friction decays back to idle
+    const idleSpeed = 0.006;          // radians/frame baseline
+    const friction = 0.985;           // slow decay so flicks carry far
+    const dragSensitivity = 0.008;
+    const flickGain = 13;             // amplifies release velocity — high = easy to accelerate
+    const maxSpeed = 0.6;             // cap so it can't go absurd
+    let velocity = idleSpeed;
+    let dragging = false;
+    let lastX = 0;
+    let lastMoveTime = 0;
+    let lastDelta = 0;
+
+    canvas.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      lastX = e.clientX;
+      lastMoveTime = performance.now();
+      lastDelta = 0;
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - lastX;
+      lastX = e.clientX;
+      lastDelta = dx;
+      lastMoveTime = performance.now();
+      pivot.rotation.y += dx * dragSensitivity;
+    });
+    const endDrag = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      // Convert last gesture into spin velocity (a "flick"), and ADD to current
+      // velocity so repeated swipes compound — like spinning a real coin harder
+      const dt = Math.max(performance.now() - lastMoveTime, 1);
+      const flick = (lastDelta / dt) * dragSensitivity * flickGain;
+      velocity = Math.max(-maxSpeed, Math.min(maxSpeed, velocity + flick));
+      try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+    };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    canvas.addEventListener('pointerleave', endDrag);
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(1, rect.width);
+      const h = Math.max(1, rect.height);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(canvas);
+    resize();
+
+    function tick() {
+      if (!dragging) {
+        pivot.rotation.y += velocity;
+        // Decay toward idle baseline (preserve sign of idle so it always returns to spinning)
+        const sign = velocity >= 0 ? 1 : -1;
+        const speed = Math.abs(velocity);
+        if (speed > idleSpeed) {
+          velocity = sign * Math.max(idleSpeed, speed * friction);
+        } else {
+          // If a flick reversed direction, ease back to forward idle
+          velocity += (idleSpeed - velocity) * 0.04;
+        }
+      }
+      renderer.render(scene, camera);
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
 </script>
 
 </body>
