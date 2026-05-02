@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventori — Know before you go.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #000000;
+    --bg-elev: #0c0c0e;
+    --bg-deeper: #050506;
+    --ink: #ffffff;
+    --ink-dim: #8a8a92;
+    --ink-faint: #3d3d44;
+    --cyan: #4dd9e3;
+    --cyan-bright: #5ee8f2;
+    --rule: #1a1a1d;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+    font-size: 18px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+
+  .logo-mark { display: inline-flex; align-items: center; gap: 10px; }
+  .logo-mark .logo-img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    display: block;
+  }
+  .logo-mark .logo-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+    font-style: italic;
+  }
+  .logo-mark .logo-text em { font-style: normal; color: var(--cyan); }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 50;
+    padding: 20px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(16px);
+    background: rgba(0,0,0,0.7);
+    border-bottom: 1px solid var(--rule);
+  }
+  nav .nav-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+  }
+  nav .nav-meta .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    margin-right: 10px;
+    animation: pulse 2s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--cyan);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 12px var(--cyan), 0 0 0 0 rgba(77,217,227,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 12px var(--cyan), 0 0 0 8px rgba(77,217,227,0); }
+  }
+
+  .hero { padding: 180px 0 100px; position: relative; }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 20%; left: 50%;
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(77,217,227,0.08) 0%, transparent 60%);
+    transform: translateX(-50%);
+    pointer-events: none;
+    filter: blur(40px);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 80px;
+    align-items: center;
+    position: relative;
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-label::before {
+    content: '';
+    width: 32px; height: 1px;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+  h1.headline {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(56px, 8.5vw, 128px);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    margin-bottom: 36px;
+  }
+  h1.headline em { font-style: italic; font-weight: 400; color: var(--cyan); }
+  h1.headline .period { color: var(--cyan); font-style: normal; }
+  .hero-sub {
+    font-size: 22px;
+    line-height: 1.45;
+    color: var(--ink-dim);
+    max-width: 540px;
+    margin-bottom: 48px;
+  }
+  .hero-sub strong { color: var(--ink); font-weight: 500; }
+
+  .signup {
+    display: flex;
+    max-width: 480px;
+    border: 1px solid var(--rule);
+    background: var(--bg-elev);
+    transition: all 0.2s;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .signup:focus-within {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(77,217,227,0.1);
+  }
+  .signup input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 18px 20px;
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+  }
+  .signup input::placeholder { color: var(--ink-faint); }
+  .signup button {
+    background: var(--cyan);
+    color: #000;
+    border: none;
+    padding: 0 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .signup button:hover {
+    background: var(--cyan-bright);
+    box-shadow: 0 0 20px rgba(77,217,227,0.4);
+  }
+  .signup-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .brand-visual {
+    position: relative;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .big-logo {
+    width: 65%;
+    max-width: 340px;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    display: block;
+  }
+  .scan-field {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .scan-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid var(--cyan);
+    opacity: 0;
+    animation: scanPulse 4s cubic-bezier(0.1, 0.7, 0.3, 1) infinite;
+  }
+  .scan-ring:nth-child(2) { animation-delay: 1.3s; }
+  .scan-ring:nth-child(3) { animation-delay: 2.6s; }
+  @keyframes scanPulse {
+    0% { width: 30%; height: 30%; opacity: 0; }
+    20% { opacity: 0.5; }
+    100% { width: 110%; height: 110%; opacity: 0; }
+  }
+  .bracket {
+    position: absolute;
+    width: 24px; height: 24px;
+    border-color: var(--cyan);
+    border-style: solid;
+    border-width: 0;
+    opacity: 0.5;
+  }
+  .bracket.tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+  .bracket.tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+  .bracket.bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+  .bracket.br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+  .coord {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--cyan);
+    opacity: 0.7;
+    letter-spacing: 0.15em;
+  }
+  .coord.top { top: 10px; left: 50%; transform: translateX(-50%); }
+  .coord.bottom { bottom: 10px; left: 50%; transform: translateX(-50%); }
+
+  section { padding: 140px 0; border-top: 1px solid var(--rule); position: relative; }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .section-label .num { color: var(--cyan); }
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 80px);
+    line-height: 0.98;
+    letter-spacing: -0.035em;
+    margin-bottom: 72px;
+    max-width: 950px;
+  }
+  h2 em { font-style: italic; color: var(--cyan); font-weight: 400; }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+  .step {
+    background: var(--bg);
+    padding: 48px 36px 56px;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .step:hover { background: var(--bg-elev); }
+  .step:hover .step-icon { opacity: 0.9; }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 0.2em;
+    margin-bottom: 80px;
+    display: block;
+  }
+  .step-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 32px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .step-body { color: var(--ink-dim); font-size: 16px; line-height: 1.55; }
+  .step-icon {
+    position: absolute;
+    top: 40px; right: 36px;
+    width: 44px; height: 44px;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+
+  .vs-table {
+    border: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+  .vs-col { padding: 48px 40px; }
+  .vs-col.left { border-right: 1px solid var(--rule); background: var(--bg-deeper); }
+  .vs-col.right {
+    background: linear-gradient(135deg, rgba(77,217,227,0.05), transparent 70%);
+    position: relative;
+  }
+  .vs-col.right::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+  }
+  .vs-heading {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 36px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .vs-col.left .vs-heading { color: var(--ink-dim); }
+  .vs-col.right .vs-heading { color: var(--cyan); }
+  .vs-item {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    line-height: 1.4;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .vs-item:last-child { border-bottom: none; }
+  .vs-col.left .vs-item {
+    color: var(--ink-faint);
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-faint);
+  }
+  .vs-col.right .vs-item { color: var(--ink); font-weight: 500; }
+  .check-mark {
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    flex-shrink: 0;
+    text-shadow: 0 0 8px var(--cyan);
+  }
+  .x-mark { color: var(--ink-faint); font-family: 'JetBrains Mono', monospace; font-size: 14px; flex-shrink: 0; }
+
+  .who {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .who-quote {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(28px, 3.5vw, 46px);
+    line-height: 1.25;
+    letter-spacing: -0.025em;
+    position: relative;
+  }
+  .who-quote::before {
+    content: '"';
+    position: absolute;
+    left: -40px; top: -30px;
+    font-size: 140px;
+    color: var(--cyan);
+    opacity: 0.4;
+    line-height: 1;
+  }
+  .who-list { list-style: none; }
+  .who-list li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-dim);
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: color 0.2s;
+  }
+  .who-list li:hover { color: var(--ink); }
+  .who-list li::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--cyan);
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .final { padding: 180px 0; text-align: center; position: relative; overflow: hidden; }
+  .final::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 30%, rgba(77,217,227,0.1), transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(77,217,227,0.04), transparent 40%);
+    pointer-events: none;
+  }
+  .final-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .final h2 {
+    font-size: clamp(48px, 7.5vw, 108px);
+    margin: 0 auto 56px;
+    max-width: 1000px;
+    text-align: center;
+  }
+  .final .signup { margin: 0 auto; }
+  .final .signup-meta { text-align: center; }
+  .final-logo-accent {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 32px;
+    opacity: 0.8;
+    display: block;
+    object-fit: contain;
+  }
+
+  footer {
+    padding: 56px 0;
+    border-top: 1px solid var(--rule);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  footer .inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  footer .footer-links { display: flex; gap: 32px; }
+  footer a { color: var(--ink-faint); text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--cyan); }
+
+  @media (max-width: 960px) {
+    .hero { padding: 140px 0 60px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+    .brand-visual { max-width: 420px; margin: 0 auto; }
+    .steps { grid-template-columns: 1fr; }
+    .vs-table { grid-template-columns: 1fr; }
+    .vs-col.left { border-right: none; border-bottom: 1px solid var(--rule); }
+    .who { grid-template-columns: 1fr; gap: 48px; }
+    .who-quote::before { left: -10px; font-size: 90px; }
+    section { padding: 80px 0; }
+    .container { padding: 0 20px; }
+    nav { padding: 16px 20px; }
+  }
+  @media (max-width: 600px) {
+    .signup { flex-direction: column; gap: 1px; background: var(--rule); }
+    .signup input, .signup button { width: 100%; padding: 16px; }
+    .hero-sub { font-size: 18px; }
+    footer .inner { flex-direction: column; align-items: flex-start; }
+  }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.9s cubic-bezier(0.2, 0.8, 0.3, 1) forwards;
+  }
+  @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+  .d1 { animation-delay: 0.1s; }
+  .d2 { animation-delay: 0.25s; }
+  .d3 { animation-delay: 0.4s; }
+  .d4 { animation-delay: 0.55s; }
+  .d5 { animation-delay: 0.7s; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="logo-mark fade-up d1" style="text-decoration:none; color:inherit;">
+    <img src="logo2.png" alt="Inventori" class="logo-img">
+    <span class="logo-text">Inventori<em>.</em></span>
+  </a>
+  <div class="nav-meta fade-up d1"><span class="dot"></span>Shipping Summer 2026</div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-label fade-up d1">Personal UHF · San Antonio, TX</div>
+        <h1 class="headline fade-up d2">
+          Know <em>before</em><br>
+          you go<span class="period">.</span>
+        </h1>
+        <p class="hero-sub fade-up d3">
+          A small scanner that confirms <strong>every notebook, folder, and book</strong> is in your bag before you walk out the door. No subscriptions. No per-tag batteries. No more turning the car around.
+        </p>
+        <form class="signup fade-up d4" onsubmit="event.preventDefault(); document.getElementById('hero-thanks').style.display='block'; this.style.display='none';">
+          <input type="email" placeholder="you@domain.com" required>
+          <button type="submit">Get Early Access →</button>
+        </form>
+        <div id="hero-thanks" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
+          ✓ YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
+        </div>
+        <div class="signup-meta fade-up d5">No spam — only launch updates</div>
+      </div>
+
+      <div class="brand-visual fade-up d3">
+        <span class="bracket tl"></span>
+        <span class="bracket tr"></span>
+        <span class="bracket bl"></span>
+        <span class="bracket br"></span>
+
+        <span class="coord top">902-928 MHz</span>
+        <span class="coord bottom">ISO 18000-6C</span>
+
+        <div class="scan-field">
+          <div class="scan-ring"></div>
+          <div class="scan-ring"></div>
+          <div class="scan-ring"></div>
+        </div>
+
+        <img src="logo2.png" alt="Inventori" class="big-logo">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label"><span class="num">01 / 03</span> The Mechanism</div>
+    <h2>Three steps between you<br>and <em>certainty</em>.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">STEP 01</span>
+        <svg class="step-icon" viewBox="0 0 40 40" fill="none">
+          <rect x="6" y="10" width="28" height="20" rx="3" stroke="#4dd9e3" stroke-width="1.5"/>
+          <circle cx="20" cy="20" r="3" fill="#4dd9e3"/>
+          <path d="M 12 14 Q 20 11 28 14" stroke="#4dd9e3" stroke-width="0.8" fill="none" opacity="0.5"/>
+        </svg>
+        <h3 class="step-title">Tag your essentials.</h3>
+        <p class="step-body">Stick a thin RFID label on each notebook, folder, and book. Tags are passive, no batteries, last for years.</p>
+      </div>
+
+      <div class="step">
+        <span class="step-num">STEP 02</span>
+        <svg class="step-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="4" fill="#4dd9e3"/>
+          <circle cx="20" cy="20" r="9" stroke="#4dd9e3" stroke-width="1" opacity="0.6"/>
+          <circle cx="20" cy="20" r="14" stroke="#4dd9e3" stroke-width="1" opacity="0.25"/>
+        </svg>
+        <h3 class="step-title">One tap. Full scan.</h3>
+        <p class="step-body">Press once. Your Inventori sweeps the bag in under a second, reading every tag inside room-scale range.</p>
+      </div>
+
+      <div class="step">
+        <span class="step-num">STEP 03</span>
+        <svg class="step-icon" viewBox="0 0 40 40" fill="none">
+          <path d="M10 20 L17 27 L30 13" stroke="#4dd9e3" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h3 class="step-title">Green means go.</h3>
+        <p class="step-body">Every expected item shows green. Anything missing shows red — before you close the door behind you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label"><span class="num">02 / 03</span> The Difference</div>
+    <h2>This isn't a tracker.<br>It's the <em>opposite</em>.</h2>
+
+    <div class="vs-table">
+      <div class="vs-col left">
+        <div class="vs-heading">AirTag / Tile / Others</div>
+        <div class="vs-item"><span class="x-mark">×</span>Find things after you lose them</div>
+        <div class="vs-item"><span class="x-mark">×</span>Battery in every tag</div>
+        <div class="vs-item"><span class="x-mark">×</span>Bluetooth proximity only</div>
+        <div class="vs-item"><span class="x-mark">×</span>Monthly subscriptions</div>
+        <div class="vs-item"><span class="x-mark">×</span>Reactive — works after the damage</div>
+      </div>
+      <div class="vs-col right">
+        <div class="vs-heading">Inventori</div>
+        <div class="vs-item"><span class="check-mark">✓</span>Confirm everything before you leave</div>
+        <div class="vs-item"><span class="check-mark">✓</span>Zero batteries in tags, ever</div>
+        <div class="vs-item"><span class="check-mark">✓</span>Room-scale UHF RFID</div>
+        <div class="vs-item"><span class="check-mark">✓</span>One-time purchase. No fees.</div>
+        <div class="vs-item"><span class="check-mark">✓</span>Proactive — stops problems at the door</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="section-label"><span class="num">03 / 03</span> The People</div>
+    <h2>Built for people<br>who <em>check twice</em>.</h2>
+
+    <div class="who">
+      <div class="who-quote">
+        The ones who pat their pockets three times before leaving the house. The ones who turn the car around. The ones who compile mental checklists. Inventori gives that feeling a button.
+      </div>
+      <ul class="who-list">
+        <li>Students rushing to class</li>
+        <li>The kid who forgets the homework</li>
+        <li>Anyone who's missed a deadline</li>
+        <li>Parents tired of the morning chaos</li>
+        <li>The chronic double-checker</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="container">
+    <img src="logo2.png" alt="Inventori" class="final-logo-accent">
+    <div class="final-eyebrow fade-up d1">— Shipping Summer 2026 —</div>
+    <h2>Stop wondering.<br>Start <em>knowing</em>.</h2>
+    <form class="signup" onsubmit="event.preventDefault(); document.getElementById('final-thanks').style.display='block'; this.style.display='none';">
+      <input type="email" placeholder="you@domain.com" required>
+      <button type="submit">Join the Waitlist →</button>
+    </form>
+    <div id="final-thanks" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
+      ✓ YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
+    </div>
+    <div class="signup-meta">First units ship to early signups — Fall 2026</div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="inner">
+      <div class="logo-mark">
+        <img src="logo2.png" alt="Inventori" class="logo-img">
+        <span class="logo-text" style="font-size:14px;">Inventori<em style="color:var(--cyan)">.</em></span>
+      </div>
+      <div class="footer-links">
+        <a href="#">Twitter</a>
+        <a href="#">Instagram</a>
+        <a href="mailto:hello@inventori.tech">Contact</a>
+      </div>
+      <div>© 2026 · Built in San Antonio</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
