@@ -10,13 +10,39 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  a:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+    .fade-up { opacity: 1; transform: none; }
+  }
+
   :root {
     --bg: #000000;
     --bg-elev: #0c0c0e;
     --bg-deeper: #050506;
     --ink: #ffffff;
     --ink-dim: #8a8a92;
-    --ink-faint: #3d3d44;
+    --ink-faint: #6a6a72;
     --cyan: #4dd9e3;
     --cyan-bright: #5ee8f2;
     --rule: #1a1a1d;
@@ -195,8 +221,8 @@
   }
   .signup-meta {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--ink-faint);
+    font-size: 12px;
+    color: var(--ink-dim);
     margin-top: 14px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -398,6 +424,7 @@
     line-height: 1.25;
     letter-spacing: -0.025em;
     position: relative;
+    max-width: 32ch;
   }
   .who-quote::before {
     content: '"';
@@ -523,8 +550,8 @@
 <body>
 
 <nav>
-  <a href="#" class="logo-mark fade-up d1" style="text-decoration:none; color:inherit;">
-    <img src="logo2.png" alt="Inventori" class="logo-img">
+  <a href="/" aria-label="Inventori home" class="logo-mark fade-up d1" style="text-decoration:none; color:inherit;">
+    <img src="logo2.png" alt="" class="logo-img">
     <span class="logo-text">Inventori<em>.</em></span>
   </a>
   <div class="nav-meta fade-up d1"><span class="dot"></span>Shipping Summer 2026</div>
@@ -542,12 +569,13 @@
         <p class="hero-sub fade-up d3">
           A small scanner that confirms <strong>every notebook, folder, and book</strong> is in your bag before you walk out the door. No subscriptions. No per-tag batteries. No more turning the car around.
         </p>
-        <form class="signup fade-up d4" onsubmit="event.preventDefault(); document.getElementById('hero-thanks').style.display='block'; this.style.display='none';">
-          <input type="email" placeholder="you@domain.com" required>
-          <button type="submit">Get Early Access →</button>
+        <form class="signup fade-up d4" action="https://formspree.io/f/xkoygkkn" method="POST" data-thanks="hero-thanks">
+          <label for="hero-email" class="sr-only">Email address</label>
+          <input id="hero-email" name="email" type="email" autocomplete="email" placeholder="you@domain.com" required>
+          <button type="submit">Get Early Access <span aria-hidden="true">→</span></button>
         </form>
-        <div id="hero-thanks" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
-          ✓ YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
+        <div id="hero-thanks" role="status" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
+          <span aria-hidden="true">✓</span> YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
         </div>
         <div class="signup-meta fade-up d5">No spam — only launch updates</div>
       </div>
@@ -567,7 +595,7 @@
           <div class="scan-ring"></div>
         </div>
 
-        <img src="logo2.png" alt="Inventori" class="big-logo">
+        <img src="logo2.png" alt="" class="big-logo">
       </div>
     </div>
   </div>
@@ -621,19 +649,19 @@
     <div class="vs-table">
       <div class="vs-col left">
         <div class="vs-heading">AirTag / Tile / Others</div>
-        <div class="vs-item"><span class="x-mark">×</span>Find things after you lose them</div>
-        <div class="vs-item"><span class="x-mark">×</span>Battery in every tag</div>
-        <div class="vs-item"><span class="x-mark">×</span>Bluetooth proximity only</div>
-        <div class="vs-item"><span class="x-mark">×</span>Monthly subscriptions</div>
-        <div class="vs-item"><span class="x-mark">×</span>Reactive — works after the damage</div>
+        <div class="vs-item"><span class="x-mark" aria-hidden="true">×</span>Find things after you lose them</div>
+        <div class="vs-item"><span class="x-mark" aria-hidden="true">×</span>Battery in every tag</div>
+        <div class="vs-item"><span class="x-mark" aria-hidden="true">×</span>Bluetooth proximity only</div>
+        <div class="vs-item"><span class="x-mark" aria-hidden="true">×</span>Monthly subscriptions</div>
+        <div class="vs-item"><span class="x-mark" aria-hidden="true">×</span>Reactive — works after the damage</div>
       </div>
       <div class="vs-col right">
         <div class="vs-heading">Inventori</div>
-        <div class="vs-item"><span class="check-mark">✓</span>Confirm everything before you leave</div>
-        <div class="vs-item"><span class="check-mark">✓</span>Zero batteries in tags, ever</div>
-        <div class="vs-item"><span class="check-mark">✓</span>Room-scale UHF RFID</div>
-        <div class="vs-item"><span class="check-mark">✓</span>One-time purchase. No fees.</div>
-        <div class="vs-item"><span class="check-mark">✓</span>Proactive — stops problems at the door</div>
+        <div class="vs-item"><span class="check-mark" aria-hidden="true">✓</span>Confirm everything before you leave</div>
+        <div class="vs-item"><span class="check-mark" aria-hidden="true">✓</span>Zero batteries in tags, ever</div>
+        <div class="vs-item"><span class="check-mark" aria-hidden="true">✓</span>Room-scale UHF RFID</div>
+        <div class="vs-item"><span class="check-mark" aria-hidden="true">✓</span>One-time purchase. No fees.</div>
+        <div class="vs-item"><span class="check-mark" aria-hidden="true">✓</span>Proactive — stops problems at the door</div>
       </div>
     </div>
   </div>
@@ -661,15 +689,16 @@
 
 <section class="final">
   <div class="container">
-    <img src="logo2.png" alt="Inventori" class="final-logo-accent">
+    <img src="logo2.png" alt="" class="final-logo-accent">
     <div class="final-eyebrow fade-up d1">— Shipping Summer 2026 —</div>
     <h2>Stop wondering.<br>Start <em>knowing</em>.</h2>
-    <form class="signup" onsubmit="event.preventDefault(); document.getElementById('final-thanks').style.display='block'; this.style.display='none';">
-      <input type="email" placeholder="you@domain.com" required>
-      <button type="submit">Join the Waitlist →</button>
+    <form class="signup" action="https://formspree.io/f/xkoygkkn" method="POST" data-thanks="final-thanks">
+      <label for="final-email" class="sr-only">Email address</label>
+      <input id="final-email" name="email" type="email" autocomplete="email" placeholder="you@domain.com" required>
+      <button type="submit">Join the Waitlist <span aria-hidden="true">→</span></button>
     </form>
-    <div id="final-thanks" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
-      ✓ YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
+    <div id="final-thanks" role="status" style="display:none; color:var(--cyan); font-family:'JetBrains Mono',monospace; font-size:13px; margin-top:14px; letter-spacing: 0.05em;">
+      <span aria-hidden="true">✓</span> YOU'RE ON THE LIST. WE'LL BE IN TOUCH.
     </div>
     <div class="signup-meta">First units ship to early signups — Fall 2026</div>
   </div>
@@ -679,18 +708,40 @@
   <div class="container">
     <div class="inner">
       <div class="logo-mark">
-        <img src="logo2.png" alt="Inventori" class="logo-img">
+        <img src="logo2.png" alt="" class="logo-img">
         <span class="logo-text" style="font-size:14px;">Inventori<em style="color:var(--cyan)">.</em></span>
       </div>
       <div class="footer-links">
-        <a href="#">Twitter</a>
-        <a href="#">Instagram</a>
         <a href="mailto:hello@inventori.tech">Contact</a>
       </div>
       <div>© 2026 · Built in San Antonio</div>
     </div>
   </div>
 </footer>
+
+<script>
+  document.querySelectorAll('form.signup').forEach(form => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const thanks = document.getElementById(form.dataset.thanks);
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) throw new Error('submit failed');
+        form.style.display = 'none';
+        if (thanks) thanks.style.display = 'block';
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Try again';
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
