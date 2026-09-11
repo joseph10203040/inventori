@@ -836,6 +836,13 @@
             margin-bottom: 10px;
         }
 
+        .pair-cancel {
+            width: 100%;
+            height: 44px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
         /* EMPTY STATES */
         .empty-state {
             color: var(--ink-faint);
@@ -1146,6 +1153,7 @@
                     <input type="text" id="new-tag-name" placeholder="Name (e.g., Caliper, Folder)"
                         onkeydown="handlePairEnter(event)">
                     <button class="btn btn-primary" onclick="saveNewTag()">Save to Library</button>
+                    <button class="btn btn-ghost pair-cancel" onclick="cancelPairing()">Cancel</button>
                 </div>
             </div>
         </div>
@@ -1179,6 +1187,12 @@
         let itemsFoundThisScan = new Set();
         let tagHistory = {};
         const HISTORY_LENGTH = 3;
+
+        // Pairing State: only listen after "Listen for Tag", and lock onto the
+        // first tag that crosses the threshold until it is named, cancelled,
+        // or the user leaves the Pair tab.
+        let isListeningForTag = false;
+        let pairingLockedID = null;
 
         async function connectBluetooth() {
             try {
@@ -1239,11 +1253,16 @@
             const avgRssi = sum / tagHistory[cleanID].length;
 
             // --- 1. PAIRING TAB LOGIC ---
-            if (document.getElementById('view-pair').classList.contains('active')) {
+            // The scanner streams the same tag many times a second. Without the
+            // lock, every reading would re-run this block and wipe the name box.
+            if (isListeningForTag && pairingLockedID === null &&
+                document.getElementById('view-pair').classList.contains('active')) {
                 const pairThreshold = parseInt(document.getElementById('pair-range-slider').value);
 
                 // Check against the smoothed average instead of raw RSSI
                 if (avgRssi >= pairThreshold) {
+                    pairingLockedID = cleanID;
+                    isListeningForTag = false;
                     document.getElementById('pairing-active').style.display = 'none';
                     document.getElementById('pairing-success').style.display = 'block';
 
@@ -1529,6 +1548,8 @@
             if (viewName === 'organize') renderOrganizer();
             if (viewName === 'scan') { renderDropdown(); renderScanList(); }
             if (leavingPair && viewName !== 'pair') {
+                isListeningForTag = false;
+                pairingLockedID = null;
                 document.getElementById('pairing-idle').style.display = 'block';
                 document.getElementById('pairing-active').style.display = 'none';
                 document.getElementById('pairing-success').style.display = 'none';
@@ -1685,8 +1706,18 @@
         // ==================== PAIRING & SAVING ====================
         function startPairing() {
             if (!bleChar) { showToast("Please Connect to Bag first!", true); return; }
+            pairingLockedID = null;
+            isListeningForTag = true;
             document.getElementById('pairing-idle').style.display = 'none';
             document.getElementById('pairing-active').style.display = 'flex';
+        }
+
+        function cancelPairing() {
+            pairingLockedID = null;
+            isListeningForTag = false;
+            document.getElementById('pairing-success').style.display = 'none';
+            document.getElementById('pairing-active').style.display = 'none';
+            document.getElementById('pairing-idle').style.display = 'block';
         }
 
         function saveNewTag() {
@@ -1707,6 +1738,8 @@
             masterItems[id] = { name: finalName };
             saveData();
             showToast(`"${finalName}" saved!`);
+            pairingLockedID = null;
+            isListeningForTag = false;
             document.getElementById('pairing-success').style.display = 'none';
             document.getElementById('pairing-idle').style.display = 'block';
             renderOrganizer();
